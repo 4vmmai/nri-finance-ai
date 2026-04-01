@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
+import { callGroqAI } from "./groq";
 
 
 
@@ -531,8 +532,8 @@ export function registerRoutes(httpServer: Server, app: Express) {
     res.json(messages);
   });
 
-  // Send a message (AI chat)
-  app.post("/api/sessions/:id/chat", (req, res) => {
+  // Send a message (AI chat) — uses Groq (real AI) with fallback to rule-based
+  app.post("/api/sessions/:id/chat", async (req, res) => {
     const sessionId = Number(req.params.id);
     const { message, mode } = req.body;
 
@@ -549,15 +550,22 @@ export function registerRoutes(httpServer: Server, app: Express) {
       createdAt: new Date().toISOString(),
     });
 
-    // Retrieve relevant docs for RAG
+    // Retrieve relevant docs for RAG (used by both Groq and fallback)
     let retrievedDocs: string[] = [];
-    if (mode === "rag") {
-      const docs = storage.searchKnowledge(message);
-      retrievedDocs = docs.map(d => `[${d.category}] ${d.title}\n${d.content}\nSource: ${d.source || "NRI Knowledge Base"}`);
-    }
+    const docs = storage.searchKnowledge(message);
+    retrievedDocs = docs.slice(0, 3).map(d => `[${d.category}] ${d.title}\n${d.content}\nSource: ${d.source || "NRI Knowledge Base"}`);
+    const retrievedContext = retrievedDocs.length > 0 ? retrievedDocs.join("\n\n---\n\n") : undefined;
 
-    // Generate AI response
-    const aiResult = generateAIResponse(message, mode || "conversational", retrievedDocs);
+    // Try Groq first (real AI), fallback to rule-based
+    let aiResult: { content: string; sources: string[]; agentSteps?: string[] };
+    const groqResult = await callGroqAI(message, mode || "conversational", retrievedContext);
+
+    if (groqResult) {
+      aiResult = groqResult;
+    } else {
+      // Fallback to rule-based
+      aiResult = generateAIResponse(message, mode || "conversational", retrievedDocs);
+    }
 
     // Save AI response
     const savedMsg = storage.addMessage({
