@@ -1,24 +1,34 @@
-FROM node:20-slim
+FROM node:20-bullseye-slim
 
-# Install build tools needed for better-sqlite3
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+# Install build tools needed for better-sqlite3 native module
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (layer caching)
 COPY package*.json ./
 
-# Install all dependencies (including devDeps for build)
-RUN npm ci
+# Install ALL dependencies (dev included — needed for build)
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
 
-# Build the app
+# Build the production bundle
 RUN npm run build
 
-# Expose port (Railway sets PORT env var automatically)
+# Remove dev dependencies after build
+RUN npm prune --production
+
+# Expose port
 EXPOSE 5000
 
 # Start production server
+ENV NODE_ENV=production
 CMD ["node", "dist/index.cjs"]

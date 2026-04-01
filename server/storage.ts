@@ -8,7 +8,9 @@ import {
   type InsertUserProfile, type InsertCalculation,
 } from "@shared/schema";
 
-const sqlite = new Database("nri_finance.db");
+// Use /tmp on Railway (writable), local path in dev
+const dbPath = process.env.NODE_ENV === "production" ? "/tmp/nri_finance.db" : "nri_finance.db";
+const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite);
 
 // Create tables
