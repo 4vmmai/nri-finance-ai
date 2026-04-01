@@ -1,0 +1,48 @@
+{
+  "name": "NRI Finance AI",
+  "short_name": "NRI Finance",
+  "description": "AI-powered guide for Non-Resident Indians to manage finances in India — banking, taxation, investments, and FEMA compliance.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e3a8a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "education", "productivity"],
+  "shortcuts": [
+    {
+      "name": "AI Assistant",
+      "short_name": "Chat",
+      "description": "Ask NRI finance questions",
+      "url": "/#/chat",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Calculators",
+      "short_name": "Calc",
+      "description": "Tax and FD calculators",
+      "url": "/#/calculator",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Knowledge Base",
+      "short_name": "Knowledge",
+      "description": "NRI finance articles",
+      "url": "/#/knowledge",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
